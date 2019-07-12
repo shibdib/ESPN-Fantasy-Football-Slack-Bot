@@ -41,5 +41,7 @@ const availablePlugins = {
     p: 'player',
     scores: 'scores',
     s: 'scores',
-    score: 'scores'
+    score: 'scores',
+    a: 'about',
+    about: 'about'
 };
