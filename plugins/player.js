@@ -5,7 +5,8 @@ module.exports.plugin = function (espn, web, event, config) {
             let injured = '';
             if (found.player.isInjured) injured = ' *INJURED*';
             (async () => {
-                await web.chat.postMessage({ channel: event.channel, text: '*' + found.player.fullName + ' ('+ found.player.proTeamAbbreviation +'-'+ found.player.defaultPosition + ')*' + injured + '\n' +
+                await web.chat.postMessage({ channel: event.channel,
+                    text: '*' + found.player.fullName + ' ('+ found.player.proTeamAbbreviation +'-'+ found.player.defaultPosition + ')*' + injured + '\n' +
                     ' _Status_ - ' + found.player.availabilityStatus + '\n' +
                     ' _Projected Points_ - ' + Math.round(getProjectedPoints(found.projectedRawStats, config)) + '\n' +
                     '_ADP_ - ' + Math.round(found.player.averageDraftPosition) + '\n' +
