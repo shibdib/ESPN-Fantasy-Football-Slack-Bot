@@ -4,7 +4,7 @@ module.exports.configurables = {
     botToken: '',
     clientSecret: '',
     signingSecret: '',
-    // Espn Cookie Info
+    // Espn Info
     leagueId: 0,
     espnS2: '',
     SWID: '{}',
