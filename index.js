@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+// Setup logger
+const log = require('simple-node-logger').createSimpleLogger('actionLog.log');
+log.setLevel('info');
+log.info('Start-up commenced....');
+
+// Get config
 const config = require('./config').configurables;
 
 // Setup ESPN
@@ -23,9 +29,9 @@ app.listen(port, () => console.log(`Listening on port ${port}!`));
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
     if (event.text.startsWith('!')) {
-        console.log(`Received a message event: user ${event.user} in channel ${event.channel} says ${event.text}`);
         let request = event.text.replace(/ .*/,'').substring(1);
         if (availablePlugins[request]) {
+            log.info(`Received a message event: user ${event.user} in channel ${event.channel} says ${event.text}`);
             request = availablePlugins[request];
             let plugin = require('./plugins/' + request);
             plugin.plugin(espn,web,event,config);
@@ -34,7 +40,7 @@ slackEvents.on('message', (event) => {
 });
 
 // Handle errors (see `errorCodes` export)
-slackEvents.on('error', console.error);
+slackEvents.on('error', log.error);
 
 const availablePlugins = {
     player: 'player',

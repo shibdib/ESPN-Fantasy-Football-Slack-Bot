@@ -1,4 +1,5 @@
-module.exports.plugin = function (espn, web, event) {
+// Simple about plugin
+module.exports.plugin = function (espn, web, event, config, log) {
     (async () => {
         await web.chat.postMessage({ channel: event.channel,
             text: '*ESPN FF Slack Bot*' + '\n' +
