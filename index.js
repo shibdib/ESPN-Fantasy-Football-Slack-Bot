@@ -34,7 +34,7 @@ slackEvents.on('message', (event) => {
             log.info(`Received a message event: user ${event.user} in channel ${event.channel} says ${event.text}`);
             request = availablePlugins[request];
             let plugin = require('./plugins/' + request);
-            plugin.plugin(espn,web,event,config);
+            plugin.plugin(espn,web,event,config,log);
         }
     }
 });

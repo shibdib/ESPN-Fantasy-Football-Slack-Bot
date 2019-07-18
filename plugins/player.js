@@ -1,18 +1,21 @@
 // Player lookup
-let players = {};
+let players = [];
 let playerCacheTimer;
 module.exports.plugin = function (espn, web, event, config, log) {
+    let found;
     // Cache player info for 1 hour
     log.debug(`Player cache: currentTimer ${playerCacheTimer} currentTime ${Date.now()}`);
     if (!players[0] || !playerCacheTimer || playerCacheTimer + (60000 * 60) < Date.now()) {
         log.debug(`Player cache: Creating cache`);
-        espn.getFreeAgents({ seasonId: 2018, scoringPeriodId: 1 }).then((freeAgents) => {
+        espn.getFreeAgents({ seasonId: 2019, scoringPeriodId: 1 }).then((freeAgents) => {
+            found = freeAgents.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
             players = freeAgents;
             playerCacheTimer = Date.now();
         });
+    } else {
+        found = players.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
     }
-    // Search for player
-    let found = players.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).replace(/\s+/g, ''))[0];
+    // If match found
     if (found) {
         let injured = '';
         if (found.player.isInjured) injured = ' *INJURED*';
