@@ -1,28 +1,47 @@
+#!/usr/bin/env node
+const config = require('./config').configurables;
+
+// Setup ESPN
+const espnApi = require('espn-fantasy-football-api/node');
+const espn = new espnApi.Client({ leagueId: config.leagueId });
+espn.setCookies({espnS2: config.espnS2, SWID: config.SWID});
+
+// Setup slack web
 const { WebClient } = require('@slack/web-api');
-// Create a new instance of the WebClient class with the token read from your environment variable
-const web = new WebClient(process.env.SLACK_TOKEN);
-// The current date
-const currentTime = new Date().toTimeString();
+const web = new WebClient(config.oAuth);
 
-const espn = require('espn-fantasy-football-api/dist/index-node.js');
+// Setup slack events
+const { createEventAdapter } = require('@slack/events-api');
+const slackEvents = createEventAdapter(config.signingSecret);
 
-espn.BaseAPIObject.setCookies({ espnS2: 'AEAy%2BgFMHtxebZWlHsViBlUKwYzyuCyef8oqsJ0XWsJDVnl5DPBeSwmSaFv4iycxUKRlsnb3eO3inHzUkAuGrxdWwUkft9HegBT%2BBNIMswpYnykMuEdV4lI0U7TPTut1Ig8uPpoG4ksf3FkfgDC2dpUtdABJTjf9fZVzMkfCn3FSfHOgq49hIt3cgo3qUIkUEiE7fxC1aJCzO4ilvDu%2B%2BlYsWeYqRSvOJrH%2FTYHDXU7rl8JbZ%2Fn5MrS13VO3b5Gx4H%2F4iOJZ%2BBOk%2B7LD6iRHCsP1', SWID: '{A979E7A6-D12E-4F3B-85E0-F96B254908AE}' }); // fire and forget
+// Initialize an express app to listen for events
+const app = require('express')();
+const port = 3000;
+app.use('/slack/events', slackEvents.expressMiddleware());
+app.listen(port, () => console.log(`Listening on port ${port}!`));
 
-const league = new espn.League({ leagueId: 12041, seasonId: 2018 });
-league.read().then(() => console.log(league)); // Prints loaded league
+// Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
+slackEvents.on('message', (event) => {
+    if (event.text.startsWith('!')) {
+        console.log(`Received a message event: user ${event.user} in channel ${event.channel} says ${event.text}`);
+        let request = event.text.replace(/ .*/,'').substring(1);
+        if (availablePlugins[request]) {
+            request = availablePlugins[request];
+            let plugin = require('./plugins/' + request);
+            plugin.plugin(espn,web,event,config);
+        }
+    }
+});
 
-(async () => {
-    // Use the `auth.test` method to find information about the installing user
-    const res = await web.auth.test()
+// Handle errors (see `errorCodes` export)
+slackEvents.on('error', console.error);
 
-    // Find your user id to know where to send messages to
-    const userId = res.user_id
-
-    // Use the `chat.postMessage` method to send a message from this app
-    await web.chat.postMessage({
-        channel: userId,
-        text: `The current time is ${currentTime}`,
-    });
-
-    console.log('Message posted!');
-})();
+const availablePlugins = {
+    player: 'player',
+    p: 'player',
+    scores: 'scores',
+    s: 'scores',
+    score: 'scores',
+    a: 'about',
+    about: 'about'
+};
