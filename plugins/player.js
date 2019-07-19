@@ -3,18 +3,24 @@ let players = [];
 let playerCacheTimer;
 module.exports.plugin = function (espn, web, event, config, log) {
     let found;
-    // Cache player info for 1 hour
+    // Cache player info for 6 hours
     log.debug(`Player cache: currentTimer ${playerCacheTimer} currentTime ${Date.now()}`);
-    if (!players[0] || !playerCacheTimer || playerCacheTimer + (60000 * 60) < Date.now()) {
+    if (!players[0] || !playerCacheTimer || playerCacheTimer + (60000 * (60 * 6)) < Date.now()) {
         log.debug(`Player cache: Creating cache`);
         espn.getFreeAgents({ seasonId: 2019, scoringPeriodId: 1 }).then((freeAgents) => {
             found = freeAgents.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
             players = freeAgents;
             playerCacheTimer = Date.now();
+            sendPlayerInfo(found, web, config);
         });
     } else {
         found = players.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
+        sendPlayerInfo(found, web, config);
     }
+};
+
+// Send player info back to channel
+function sendPlayerInfo(found, web, config) {
     // If match found
     if (found) {
         let injured = '';
@@ -34,7 +40,7 @@ module.exports.plugin = function (espn, web, event, config, log) {
             await web.chat.postMessage({ channel: event.channel, text: event.text.substr(event.text.indexOf(" ") + 1) + ' could not be found.' });
         })();
     }
-};
+}
 
 function getProjectedPoints(projectedStats, config) {
     let points = 0;
