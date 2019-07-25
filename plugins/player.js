@@ -11,16 +11,16 @@ module.exports.plugin = function (espn, web, event, config, log) {
             found = freeAgents.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
             players = freeAgents;
             playerCacheTimer = Date.now();
-            sendPlayerInfo(found, web, config);
+            sendPlayerInfo(found, event, web, config);
         });
     } else {
         found = players.filter((p) => p.player.fullName.toLowerCase().replace(/\s+/g, '') === event.text.substr(event.text.indexOf(" ") + 1).toLowerCase().replace(/\s+/g, ''))[0];
-        sendPlayerInfo(found, web, config);
+        sendPlayerInfo(found, event, web, config);
     }
 };
 
 // Send player info back to channel
-function sendPlayerInfo(found, web, config) {
+function sendPlayerInfo(found, event, web, config) {
     // If match found
     if (found) {
         let injured = '';
